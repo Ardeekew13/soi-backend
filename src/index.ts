@@ -3,6 +3,7 @@ import { ApolloServerPluginLandingPageGraphQLPlayground } from "@apollo/server-p
 import { expressMiddleware } from "@apollo/server/express4";
 import { PrismaClient } from "@prisma/client";
 import cors from "cors";
+import "dotenv/config";
 import express from "express";
 import session from "express-session";
 import { readFileSync } from "fs";
@@ -37,7 +38,8 @@ const server = new ApolloServer({
 			saveUninitialized: false,
 			cookie: {
 				httpOnly: true,
-				secure: process.env.NODE_ENV === "production",
+				// secure: process.env.NODE_ENV === "production" do this when production,
+				secure: false,
 				sameSite: "lax",
 				maxAge: 1000 * 60 * 60 * 24, // 1 day
 			},
@@ -61,7 +63,8 @@ const server = new ApolloServer({
 		})
 	);
 
-	const PORT = 4000;
+	const PORT = process.env.PORT || 4000;
+
 	app.listen(PORT, () => {
 		console.log(`🚀 Server ready at http://localhost:${PORT}/`);
 	});
