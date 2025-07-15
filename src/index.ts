@@ -1,14 +1,15 @@
 import { ApolloServer } from "@apollo/server";
-import { ApolloServerPluginLandingPageGraphQLPlayground } from "@apollo/server-plugin-landing-page-graphql-playground";
 import { expressMiddleware } from "@apollo/server/express4";
 import { PrismaClient } from "@prisma/client";
 import cors from "cors";
+import dotenv from "dotenv";
 import "dotenv/config";
 import express from "express";
 import session from "express-session";
 import { readFileSync } from "fs";
 import path from "path";
 import { resolvers } from "./resolvers";
+dotenv.config();
 
 const prisma = new PrismaClient();
 const typeDefs = readFileSync(path.join(__dirname, "schema.graphql"), "utf8");
@@ -17,7 +18,7 @@ const app = express();
 const server = new ApolloServer({
 	typeDefs,
 	resolvers,
-	plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
+	introspection: true,
 });
 
 (async () => {
@@ -64,7 +65,9 @@ const server = new ApolloServer({
 	);
 
 	const PORT = process.env.PORT || 4000;
-
+	app.get("/health", (_req, res) => {
+		res.send("OK");
+	});
 	app.listen(PORT, () => {
 		console.log(`🚀 Server ready at http://localhost:${PORT}/`);
 	});
