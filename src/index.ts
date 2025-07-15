@@ -26,7 +26,11 @@ const server = new ApolloServer({
 
 	app.use(
 		cors({
-			origin: ["http://localhost:3000", "https://soi-inventory.vercel.app"],
+			origin: [
+				"http://localhost:3000",
+				"https://soi-inventory.vercel.app",
+				"https://studio.apollographql.com",
+			],
 			credentials: true,
 		})
 	);
