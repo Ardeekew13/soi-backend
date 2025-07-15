@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 
-const password = "nEDar!Hp"; // replace with your plain text password
+const password = "password123"; // replace with your plain text password
 const saltRounds = 10;
 
 bcrypt.hash(password, saltRounds, function (err, hash) {

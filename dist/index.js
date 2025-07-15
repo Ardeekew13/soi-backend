@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const server_1 = require("@apollo/server");
+const server_plugin_landing_page_graphql_playground_1 = require("@apollo/server-plugin-landing-page-graphql-playground");
 const express4_1 = require("@apollo/server/express4");
 const client_1 = require("@prisma/client");
 const cors_1 = __importDefault(require("cors"));
@@ -18,11 +19,12 @@ const app = (0, express_1.default)();
 const server = new server_1.ApolloServer({
     typeDefs,
     resolvers: resolvers_1.resolvers,
+    plugins: [(0, server_plugin_landing_page_graphql_playground_1.ApolloServerPluginLandingPageGraphQLPlayground)()],
 });
 (async () => {
     await server.start();
     app.use((0, cors_1.default)({
-        origin: ["http://localhost:3000", "https://studio.apollographql.com"],
+        origin: ["http://localhost:3000", "https://soi-inventory.vercel.app"],
         credentials: true,
     }));
     app.use((0, express_session_1.default)({
@@ -32,7 +34,7 @@ const server = new server_1.ApolloServer({
         saveUninitialized: false,
         cookie: {
             httpOnly: true,
-            secure: false, // Set to true if using HTTPS
+            secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
             maxAge: 1000 * 60 * 60 * 24, // 1 day
         },

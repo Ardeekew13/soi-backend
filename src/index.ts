@@ -1,4 +1,5 @@
 import { ApolloServer } from "@apollo/server";
+import { ApolloServerPluginLandingPageGraphQLPlayground } from "@apollo/server-plugin-landing-page-graphql-playground";
 import { expressMiddleware } from "@apollo/server/express4";
 import { PrismaClient } from "@prisma/client";
 import cors from "cors";
@@ -15,6 +16,7 @@ const app = express();
 const server = new ApolloServer({
 	typeDefs,
 	resolvers,
+	plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
 });
 
 (async () => {

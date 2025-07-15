@@ -3,20 +3,21 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-"scripts": {
-  "codegen": "graphql-codegen",
-  "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-  "dev:codegen": "npm run codegen && npm run dev",
-"build": "tsc && cp src/schema.graphql dist/schema.graphql",
-  "start": "node dist/index.js",
-  "postinstall": "prisma generate",
-  "migrate": "npx prisma migrate deploy"
-},
+  "scripts": {
+    "codegen": "graphql-codegen",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev:codegen": "npm run codegen && npm run dev",
+    "build": "tsc && cp src/schema.graphql dist/schema.graphql",
+    "start": "node dist/index.js",
+    "postinstall": "prisma generate",
+    "migrate": "npx prisma migrate deploy"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@apollo/server": "^4.12.2",
+    "@apollo/server-plugin-landing-page-graphql-playground": "^4.0.1",
     "@prisma/client": "^6.10.1",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
