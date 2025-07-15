@@ -34,17 +34,17 @@ const server = new ApolloServer({
 			credentials: true,
 		})
 	);
-
+	app.set("trust proxy", 1);
 	app.use(
 		session({
 			name: "sid",
-			secret: "your_super_secret", // Use env var in production
+			secret: process.env.SESSION_SECRET || "your_super_secret", // Use env var in production
 			resave: false,
 			saveUninitialized: false,
 			cookie: {
 				httpOnly: true,
-				secure: process.env.NODE_ENV === "production",
-				sameSite: "lax",
+				secure: true,
+				sameSite: "none",
 				maxAge: 1000 * 60 * 60 * 24, // 1 day
 			},
 		})
