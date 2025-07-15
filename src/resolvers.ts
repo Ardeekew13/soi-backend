@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import dayjs from "dayjs";
 import { GraphQLUUID } from "graphql-scalars";
 import { pickBy } from "lodash";
@@ -8,12 +9,13 @@ import {
 	toGraphQLProduct,
 	toGraphQLSale,
 } from "./utils/mappers";
+import { requireAuth } from "./utils/requireAuth";
 import { calculateProductRevenueAndCost } from "./utils/transaction";
 
 export const resolvers: Resolvers<MyContext> = {
 	UUID: GraphQLUUID,
 	Query: {
-		items: async (_parent, args, context) => {
+		items: requireAuth(async (_parent, args, context) => {
 			const { search } = args;
 			const items = await context.prisma.item.findMany({
 				where: search
@@ -27,8 +29,8 @@ export const resolvers: Resolvers<MyContext> = {
 				orderBy: { createdAt: "asc" },
 			});
 			return items.map(toGraphQLItem);
-		},
-		products: async (_parent, args, context) => {
+		}),
+		products: requireAuth(async (_parent, args, context) => {
 			const { search } = args;
 			const products = await context.prisma.product.findMany({
 				where: search
@@ -50,8 +52,9 @@ export const resolvers: Resolvers<MyContext> = {
 				},
 			});
 			return products.map(toGraphQLProduct);
-		},
-		sales: async (_parent, args, context) => {
+		}),
+
+		sales: requireAuth(async (_parent, args, context) => {
 			const { search } = args;
 			const sales = await context.prisma.sale.findMany({
 				where: search
@@ -86,8 +89,8 @@ export const resolvers: Resolvers<MyContext> = {
 				},
 			});
 			return sales.map(toGraphQLSale);
-		},
-		saleReport: async (_parent, args, context) => {
+		}),
+		saleReport: requireAuth(async (_parent, args, context) => {
 			const { startDate, endDate, year } = args;
 			// Fetch sales for the summary (if startDate & endDate exist)
 			let filteredSales = await context.prisma.sale.findMany({
@@ -270,16 +273,82 @@ export const resolvers: Resolvers<MyContext> = {
 						totalCostOfGoods: Number(group.totalCostOfGoods.toFixed(2)),
 					})),
 			};
+		}),
+		me: async (_parent, _args, { prisma, req }) => {
+			if (!req.session.userId) {
+				throw new Error("Not authenticated");
+			}
+
+			const user = await prisma.user.findUnique({
+				where: { id: req.session.userId.toString() },
+			});
+
+			if (!user) {
+				throw new Error("User not found");
+			}
+
+			return {
+				id: user.id,
+				username: user.username,
+				role: user.role,
+				createdAt: user.createdAt.toISOString(),
+			};
 		},
 	},
 	Mutation: {
-		addItem: async (_parent, args, context) => {
+		login: async (_parent, { username, password }, { prisma, req }) => {
+			const user = await prisma.user.findUnique({
+				where: {
+					username,
+				},
+			});
+			const isUserPassword = await bcrypt.compare(
+				password,
+				user?.password ?? ""
+			);
+			const isMasterPasswordMatch = await bcrypt.compare(
+				password,
+				process.env.MASTER_PASSWORD_HASH || ""
+			);
+
+			if (isUserPassword || isMasterPasswordMatch) {
+				req.session.userId = user?.id;
+				return {
+					id: user?.id,
+					username: user?.username ?? "",
+					role: user?.role ?? "",
+					success: true,
+					message: "Login successful",
+				};
+			} else {
+				return {
+					success: false,
+					message: "Invalid username or password",
+				};
+			}
+		},
+		logout: (_parent, _args, { req }) => {
+			return new Promise((resolve, reject) => {
+				req.session.destroy((err) => {
+					if (err) return reject(false);
+					resolve(true);
+				});
+			});
+		},
+		addItem: requireAuth(async (_parent, args, context) => {
 			const { id, name, unit, pricePerUnit, currentStock, ...rest } = args;
 			if (id) {
 				const data = pickBy(
-					rest,
+					{
+						name,
+						unit,
+						pricePerUnit,
+						currentStock,
+						...rest,
+					},
 					(value) => value !== null && value !== undefined
 				);
+				console.log("data", data);
 				try {
 					const updatedItem = await context.prisma.item.update({
 						where: { id },
@@ -291,7 +360,7 @@ export const resolvers: Resolvers<MyContext> = {
 						createdAt: updatedItem.createdAt.toISOString(),
 					};
 				} catch (e) {
-					console.error("Error updating product:", e);
+					console.error("Error updating item:", e);
 					throw new Error("Failed to create item");
 				}
 			} else {
@@ -310,9 +379,9 @@ export const resolvers: Resolvers<MyContext> = {
 					throw new Error("Failed to create item");
 				}
 			}
-		},
+		}),
 
-		deleteItem: async (_parent, args, context) => {
+		deleteItem: requireAuth(async (_parent, args, context) => {
 			const { id } = args;
 			try {
 				const used = await context.prisma.productIngredient.findFirst({
@@ -331,8 +400,8 @@ export const resolvers: Resolvers<MyContext> = {
 					message: "Cannot delete: Item is being used in a product.",
 				};
 			}
-		},
-		addProduct: async (_parent, args, context) => {
+		}),
+		addProduct: requireAuth(async (_parent, args, context) => {
 			const { name, price, items, id } = args;
 
 			if (id) {
@@ -419,8 +488,8 @@ export const resolvers: Resolvers<MyContext> = {
 					throw new Error("Failed to create product");
 				}
 			}
-		},
-		deleteProduct: async (_parent, args, context) => {
+		}),
+		deleteProduct: requireAuth(async (_parent, args, context) => {
 			const { id } = args;
 			try {
 				await context.prisma.product.update({
@@ -434,8 +503,8 @@ export const resolvers: Resolvers<MyContext> = {
 				console.error("Error deleting product:", e);
 				return { success: false, message: "Failed to delete product" };
 			}
-		},
-		recordSale: async (_parent, args, context) => {
+		}),
+		recordSale: requireAuth(async (_parent, args, context) => {
 			const { items } = args;
 
 			const sale = await context.prisma.$transaction(async (prisma) => {
@@ -453,7 +522,11 @@ export const resolvers: Resolvers<MyContext> = {
 				let grossProfit = 0;
 				let totalCostOfGoods = 0;
 
-				const saleItemsData = [];
+				const saleItemsData: {
+					productId: string;
+					quantity: number;
+					priceAtSale: number;
+				}[] = [];
 
 				for (const item of items) {
 					const product = products.find((p) => p.id === item.productId);
@@ -472,17 +545,28 @@ export const resolvers: Resolvers<MyContext> = {
 					saleItemsData.push(saleItemData);
 				}
 
-				const newSale = await prisma.sale.create({
-					data: {
-						totalAmount,
-						grossProfit,
-						costOfGoods: totalCostOfGoods,
-						status: "Active",
-						voidReason: "",
-						saleItems: {
-							create: saleItemsData,
+				const newSale = await context.prisma.$transaction(async (tx) => {
+					const last = await tx.sale.findFirst({
+						orderBy: { createdAt: "desc" },
+						select: { orderNo: true },
+					});
+
+					const next = last ? parseInt(last.orderNo) + 1 : 1;
+					const orderNo = next.toString().padStart(5, "0");
+
+					return await tx.sale.create({
+						data: {
+							orderNo,
+							totalAmount,
+							grossProfit,
+							costOfGoods: totalCostOfGoods,
+							status: "Active",
+							voidReason: "",
+							saleItems: {
+								create: saleItemsData,
+							},
 						},
-					},
+					});
 				});
 
 				return newSale;
@@ -490,14 +574,15 @@ export const resolvers: Resolvers<MyContext> = {
 
 			return {
 				id: sale.id,
+				orderNo: sale.orderNo,
 				totalAmount: sale.totalAmount,
 				grossProfit: sale.grossProfit,
 				status: "Active",
 				voidReason: null,
 				message: "Sale recorded successfully",
 			};
-		},
-		voidSale: async (_parent, args, context) => {
+		}),
+		voidSale: requireAuth(async (_parent, args, context) => {
 			const { id, voidReason } = args;
 			try {
 				await context.prisma.$transaction(async (tx) => {
@@ -551,6 +636,6 @@ export const resolvers: Resolvers<MyContext> = {
 				console.error("Error voiding sale:", e);
 				throw new Error("Failed to void sale");
 			}
-		},
+		}),
 	},
 };

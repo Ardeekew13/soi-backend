@@ -36,6 +36,15 @@ export type Item = {
   updatedAt: Scalars['String']['output'];
 };
 
+export type LoginResponse = {
+  __typename?: 'LoginResponse';
+  id?: Maybe<Scalars['UUID']['output']>;
+  message: Scalars['String']['output'];
+  role?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
+  username?: Maybe<Scalars['String']['output']>;
+};
+
 export type MonthlySaleReport = {
   __typename?: 'MonthlySaleReport';
   grossProfit?: Maybe<Scalars['Float']['output']>;
@@ -51,8 +60,10 @@ export type Mutation = {
   addProduct: Product;
   deleteItem: DeletionResult;
   deleteProduct: DeletionResult;
+  login: LoginResponse;
+  logout: Scalars['Boolean']['output'];
   recordSale: SaleResponse;
-  voidSale?: Maybe<DeletionResult>;
+  voidSale: DeletionResult;
 };
 
 
@@ -83,6 +94,12 @@ export type MutationDeleteProductArgs = {
 };
 
 
+export type MutationLoginArgs = {
+  password: Scalars['String']['input'];
+  username: Scalars['String']['input'];
+};
+
+
 export type MutationRecordSaleArgs = {
   items: Array<SaleItemInput>;
 };
@@ -95,6 +112,7 @@ export type MutationVoidSaleArgs = {
 
 export type Product = {
   __typename?: 'Product';
+  availableUnits: Scalars['Int']['output'];
   createdAt: Scalars['String']['output'];
   id: Scalars['UUID']['output'];
   ingredientsUsed: Array<ProductIngredient>;
@@ -120,6 +138,7 @@ export type ProductIngredientInput = {
 export type Query = {
   __typename?: 'Query';
   items: Array<Item>;
+  me: User;
   products: Array<Product>;
   saleReport?: Maybe<SaleReportGroup>;
   sales: Array<Sale>;
@@ -153,6 +172,7 @@ export type Sale = {
   createdAt: Scalars['String']['output'];
   grossProfit: Scalars['Float']['output'];
   id: Scalars['UUID']['output'];
+  orderNo: Scalars['String']['output'];
   saleItems: Array<SaleItem>;
   status: Scalars['String']['output'];
   totalAmount: Scalars['Float']['output'];
@@ -191,6 +211,7 @@ export type SaleResponse = {
   grossProfit: Scalars['Float']['output'];
   id: Scalars['UUID']['output'];
   message: Scalars['String']['output'];
+  orderNo: Scalars['String']['output'];
   totalAmount: Scalars['Float']['output'];
 };
 
@@ -198,6 +219,14 @@ export type TopProduct = {
   __typename?: 'TopProduct';
   name: Scalars['String']['output'];
   quantity: Scalars['Int']['output'];
+};
+
+export type User = {
+  __typename?: 'User';
+  createdAt: Scalars['String']['output'];
+  id: Scalars['UUID']['output'];
+  role: Scalars['String']['output'];
+  username: Scalars['String']['output'];
 };
 
 
@@ -277,6 +306,7 @@ export type ResolversTypes = {
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   Item: ResolverTypeWrapper<Item>;
   JSON: ResolverTypeWrapper<Scalars['JSON']['output']>;
+  LoginResponse: ResolverTypeWrapper<LoginResponse>;
   MonthlySaleReport: ResolverTypeWrapper<MonthlySaleReport>;
   Mutation: ResolverTypeWrapper<{}>;
   Product: ResolverTypeWrapper<Product>;
@@ -291,6 +321,7 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   TopProduct: ResolverTypeWrapper<TopProduct>;
   UUID: ResolverTypeWrapper<Scalars['UUID']['output']>;
+  User: ResolverTypeWrapper<User>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -301,6 +332,7 @@ export type ResolversParentTypes = {
   Int: Scalars['Int']['output'];
   Item: Item;
   JSON: Scalars['JSON']['output'];
+  LoginResponse: LoginResponse;
   MonthlySaleReport: MonthlySaleReport;
   Mutation: {};
   Product: Product;
@@ -315,6 +347,7 @@ export type ResolversParentTypes = {
   String: Scalars['String']['output'];
   TopProduct: TopProduct;
   UUID: Scalars['UUID']['output'];
+  User: User;
 };
 
 export type DeletionResultResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['DeletionResult'] = ResolversParentTypes['DeletionResult']> = {
@@ -338,6 +371,15 @@ export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
   name: 'JSON';
 }
 
+export type LoginResponseResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['LoginResponse'] = ResolversParentTypes['LoginResponse']> = {
+  id?: Resolver<Maybe<ResolversTypes['UUID']>, ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  role?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  username?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type MonthlySaleReportResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['MonthlySaleReport'] = ResolversParentTypes['MonthlySaleReport']> = {
   grossProfit?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   month?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -352,11 +394,14 @@ export type MutationResolvers<ContextType = MyContext, ParentType extends Resolv
   addProduct?: Resolver<ResolversTypes['Product'], ParentType, ContextType, RequireFields<MutationAddProductArgs, 'name' | 'price'>>;
   deleteItem?: Resolver<ResolversTypes['DeletionResult'], ParentType, ContextType, RequireFields<MutationDeleteItemArgs, 'id'>>;
   deleteProduct?: Resolver<ResolversTypes['DeletionResult'], ParentType, ContextType, RequireFields<MutationDeleteProductArgs, 'id'>>;
+  login?: Resolver<ResolversTypes['LoginResponse'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'password' | 'username'>>;
+  logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   recordSale?: Resolver<ResolversTypes['SaleResponse'], ParentType, ContextType, RequireFields<MutationRecordSaleArgs, 'items'>>;
-  voidSale?: Resolver<Maybe<ResolversTypes['DeletionResult']>, ParentType, ContextType, RequireFields<MutationVoidSaleArgs, 'id' | 'voidReason'>>;
+  voidSale?: Resolver<ResolversTypes['DeletionResult'], ParentType, ContextType, RequireFields<MutationVoidSaleArgs, 'id' | 'voidReason'>>;
 };
 
 export type ProductResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Product'] = ResolversParentTypes['Product']> = {
+  availableUnits?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['UUID'], ParentType, ContextType>;
   ingredientsUsed?: Resolver<Array<ResolversTypes['ProductIngredient']>, ParentType, ContextType>;
@@ -377,6 +422,7 @@ export type ProductIngredientResolvers<ContextType = MyContext, ParentType exten
 
 export type QueryResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   items?: Resolver<Array<ResolversTypes['Item']>, ParentType, ContextType, Partial<QueryItemsArgs>>;
+  me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   products?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType, Partial<QueryProductsArgs>>;
   saleReport?: Resolver<Maybe<ResolversTypes['SaleReportGroup']>, ParentType, ContextType, Partial<QuerySaleReportArgs>>;
   sales?: Resolver<Array<ResolversTypes['Sale']>, ParentType, ContextType, Partial<QuerySalesArgs>>;
@@ -387,6 +433,7 @@ export type SaleResolvers<ContextType = MyContext, ParentType extends ResolversP
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   grossProfit?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['UUID'], ParentType, ContextType>;
+  orderNo?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   saleItems?: Resolver<Array<ResolversTypes['SaleItem']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   totalAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
@@ -420,6 +467,7 @@ export type SaleResponseResolvers<ContextType = MyContext, ParentType extends Re
   grossProfit?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['UUID'], ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  orderNo?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   totalAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -434,10 +482,19 @@ export interface UuidScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
   name: 'UUID';
 }
 
+export type UserResolvers<ContextType = MyContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['UUID'], ParentType, ContextType>;
+  role?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  username?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type Resolvers<ContextType = MyContext> = {
   DeletionResult?: DeletionResultResolvers<ContextType>;
   Item?: ItemResolvers<ContextType>;
   JSON?: GraphQLScalarType;
+  LoginResponse?: LoginResponseResolvers<ContextType>;
   MonthlySaleReport?: MonthlySaleReportResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Product?: ProductResolvers<ContextType>;
@@ -449,5 +506,6 @@ export type Resolvers<ContextType = MyContext> = {
   SaleResponse?: SaleResponseResolvers<ContextType>;
   TopProduct?: TopProductResolvers<ContextType>;
   UUID?: GraphQLScalarType;
+  User?: UserResolvers<ContextType>;
 };
 

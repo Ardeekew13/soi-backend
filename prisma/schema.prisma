@@ -59,6 +59,7 @@ model Sale {
   grossProfit Float
   status      String
   voidReason  String
+  orderNo     String     @unique
 }
 
 model SaleItem {
@@ -69,4 +70,12 @@ model SaleItem {
   productId   String  @db.Uuid
   quantity    Int
   priceAtSale Float
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  username  String   @unique
+  password  String
+  role      String
+  createdAt DateTime @default(now())
 }
