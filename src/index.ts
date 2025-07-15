@@ -22,7 +22,7 @@ const server = new ApolloServer({
 
 	app.use(
 		cors({
-			origin: ["http://localhost:3000", "https://studio.apollographql.com"],
+			origin: ["http://localhost:3000", "https://soi-inventory.vercel.app"],
 			credentials: true,
 		})
 	);
@@ -35,7 +35,7 @@ const server = new ApolloServer({
 			saveUninitialized: false,
 			cookie: {
 				httpOnly: true,
-				secure: false, // Set to true if using HTTPS
+				secure: process.env.NODE_ENV === "production",
 				sameSite: "lax",
 				maxAge: 1000 * 60 * 60 * 24, // 1 day
 			},
