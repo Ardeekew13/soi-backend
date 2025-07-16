@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-import session from "express-session";
+import * as session from "express-session";
 
 export interface MyContext {
 	prisma: PrismaClient;
