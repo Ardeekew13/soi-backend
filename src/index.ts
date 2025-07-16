@@ -56,10 +56,10 @@ const server = new ApolloServer({
 	app.use(
 		"/graphql",
 		express.json(),
-		expressMiddleware(server, {
+		expressMiddleware<MyContext>(server, {
 			context: async ({ req, res }) => {
 				return {
-					req: req as MyContext["req"],
+					req,
 					res,
 					session: req.session,
 					prisma,

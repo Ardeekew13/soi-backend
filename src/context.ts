@@ -4,6 +4,6 @@ import * as session from "express-session";
 
 export interface MyContext {
 	prisma: PrismaClient;
-	req: Request & { session: session.Session & Partial<session.SessionData> };
+	req: Request & { session: session.SessionData };
 	res: Response;
 }
