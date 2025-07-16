@@ -1,9 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-import { Session, SessionData } from "express-session";
+import session from "express-session";
 
 export interface MyContext {
 	prisma: PrismaClient;
-	req: Request & { session: Session & Partial<SessionData> };
+	req: Request & { session: session.Session & Partial<session.SessionData> };
 	res: Response;
 }

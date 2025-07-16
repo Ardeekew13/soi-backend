@@ -8,6 +8,7 @@ import express from "express";
 import session from "express-session";
 import { readFileSync } from "fs";
 import path from "path";
+import { MyContext } from "./context";
 import { resolvers } from "./resolvers";
 dotenv.config();
 
@@ -58,7 +59,7 @@ const server = new ApolloServer({
 		expressMiddleware(server, {
 			context: async ({ req, res }) => {
 				return {
-					req,
+					req: req as MyContext["req"],
 					res,
 					session: req.session,
 					prisma,
