@@ -36,7 +36,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.19",
     "@types/express-session": "^1.18.2",
-    "@types/lodash": "^4.17.18",
+    "@types/lodash": "^4.17.20",
     "@types/node": "^24.0.3",
     "prisma": "^6.10.1",
     "ts-node": "^10.9.2",
