@@ -11,5 +11,5 @@
 		"noImplicitAny": false,
 		"types": ["node", "express", "express-session"]
 	},
-	"include": ["src", "src/types/**/*.d.ts"]
+	"include": ["src", "types"]
 }
