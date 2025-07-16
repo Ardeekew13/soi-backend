@@ -6,3 +6,9 @@ declare module "express-session" {
 		role?: string;
 	}
 }
+
+declare module "express-serve-static-core" {
+	interface Request {
+		session: session.Session & Partial<session.SessionData>;
+	}
+}
