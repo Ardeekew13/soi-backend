@@ -1,5 +1,4 @@
 import "express-session";
-import * as session from "express-session";
 
 declare module "express-session" {
 	interface SessionData {
@@ -9,6 +8,8 @@ declare module "express-session" {
 }
 
 declare module "express-serve-static-core" {
+	import session from "express-session";
+
 	interface Request {
 		session: session.Session & Partial<session.SessionData>;
 	}
