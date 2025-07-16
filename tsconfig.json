@@ -11,7 +11,7 @@
 		"skipLibCheck": true,
 		"typeRoots": ["./types", "./node_modules/@types"],
 		"noImplicitAny": false,
-		"types": ["node", "express", "express-session"]
+		"types": ["node", "express"]
 	},
 	"include": ["src", "types"]
 }
