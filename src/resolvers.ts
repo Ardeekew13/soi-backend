@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import dayjs from "dayjs";
 import { GraphQLUUID } from "graphql-scalars";
 import { pickBy } from "lodash";
+import { isUUID } from "validator";
 import { MyContext } from "./context";
 import { Resolvers } from "./generated/graphql";
 import {
@@ -11,7 +12,6 @@ import {
 } from "./utils/mappers";
 import { requireAuth } from "./utils/requireAuth";
 import { calculateProductRevenueAndCost } from "./utils/transaction";
-
 export const resolvers: Resolvers<MyContext> = {
 	UUID: GraphQLUUID,
 	Query: {
@@ -59,7 +59,7 @@ export const resolvers: Resolvers<MyContext> = {
 			const sales = await context.prisma.sale.findMany({
 				where: search
 					? {
-							id: {
+							orderNo: {
 								equals: search,
 							},
 							status: {
@@ -337,7 +337,7 @@ export const resolvers: Resolvers<MyContext> = {
 		},
 		addItem: requireAuth(async (_parent, args, context) => {
 			const { id, name, unit, pricePerUnit, currentStock, ...rest } = args;
-			if (id) {
+			if (isUUID(id)) {
 				const data = pickBy(
 					{
 						name,
