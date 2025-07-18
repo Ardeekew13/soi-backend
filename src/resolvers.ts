@@ -337,19 +337,24 @@ export const resolvers: Resolvers<MyContext> = {
 		},
 		addItem: requireAuth(async (_parent, args, context) => {
 			const { id, name, unit, pricePerUnit, currentStock, ...rest } = args;
-			if (isUUID(id)) {
-				const data = pickBy(
-					{
-						name,
-						unit,
-						pricePerUnit,
-						currentStock,
-						...rest,
-					},
-					(value) => value !== null && value !== undefined
-				);
-				console.log("data", data);
-				try {
+			const isValidId = id && isUUID(id);
+			if (id && !isUUID(id)) {
+				throw new Error("Invalid UUID");
+			}
+
+			const data = pickBy(
+				{
+					name,
+					unit,
+					pricePerUnit,
+					currentStock,
+					...rest,
+				},
+				(value) => value !== null && value !== undefined
+			);
+
+			try {
+				if (isValidId) {
 					const updatedItem = await context.prisma.item.update({
 						where: { id },
 						data,
@@ -359,12 +364,7 @@ export const resolvers: Resolvers<MyContext> = {
 						updatedAt: updatedItem.updatedAt.toISOString(),
 						createdAt: updatedItem.createdAt.toISOString(),
 					};
-				} catch (e) {
-					console.error("Error updating item:", e);
-					throw new Error("Failed to create item");
-				}
-			} else {
-				try {
+				} else {
 					const item = await context.prisma.item.create({
 						data: {
 							name,
@@ -374,13 +374,12 @@ export const resolvers: Resolvers<MyContext> = {
 						},
 					});
 					return toGraphQLItem(item);
-				} catch (e) {
-					console.error("Error creating item:", e);
-					throw new Error("Failed to create item");
 				}
+			} catch (e) {
+				console.error("Error creating item:", e);
+				throw new Error("Failed to create item");
 			}
 		}),
-
 		deleteItem: requireAuth(async (_parent, args, context) => {
 			const { id } = args;
 			try {
